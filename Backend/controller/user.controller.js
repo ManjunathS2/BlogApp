@@ -1,6 +1,7 @@
 import { User } from "../model/user.model.js"
 import bcrypt from  "bcryptjs"
 import { v2 as cloudinary } from "cloudinary";
+import createTokenAndSaveCookies from "../jwt/AuthToken.js";
 
 export const register=async (req,res)=>{
     try {
@@ -39,8 +40,24 @@ export const register=async (req,res)=>{
           role,
         });
         await newUser.save()
+
         if(newUser){
-            return res.status(200).json({message:"user crested succesfully",})
+            let token=await createTokenAndSaveCookies(newUser._id,res)
+            console.log(token)
+            res.status(400).json({
+              messgage: "User crested successfully",
+              user: {
+                id: newUser._id,
+                name: newUser.name,
+                email: newUser.email,
+                role: newUser.role,
+                education: newUser.education,
+                avatar: newUser.avatar,
+                createdOn: newUser.createdOn,
+              },
+              token:token
+            });
+            
         }
 
     } catch (error) {

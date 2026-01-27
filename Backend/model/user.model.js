@@ -26,6 +26,9 @@ const userSchema=mongoose.Schema({
             require:true
         }
     },
+    token:{
+        type:String
+    },
     phone:{
         type:Number,
         require:true,
