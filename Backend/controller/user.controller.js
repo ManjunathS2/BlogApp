@@ -27,6 +27,9 @@ export const register=async (req,res)=>{
         const hashPassword=await bcrypt.hash(password,10)
 
         const cloudinaryResponse=await cloudinary.uploader.upload(photo.tempFilePath)
+        if(!cloudinaryResponse||cloudinaryResponse.response){
+            return res.status(400).json({meassage:"error in cloudinary"})
+        }
         const newUser = new User({
           email,
           name,
@@ -62,6 +65,61 @@ export const register=async (req,res)=>{
 
     } catch (error) {
         console.log("error",error)
+    }
+
+}
+
+export const login= async(req,res)=>{
+    const {email,password,role}=req.body
+    console.log(req.body)
+
+    try{
+        if(!email||!password||!role){
+           return res.status(400).json({meassage:"error in the file"})
+        }
+        const user=await User.findOne({email}).select("+password")
+        if(!user){
+            
+           return res.status(400).json({ meassage: "invalid password or email" });
+        }
+        const isMatch=await bcrypt.compare(password,user.password)
+        if(!user||!isMatch){
+            return res.status(400).json({ meassage: "invalid password or email" });
+        }
+        if(user.role!==role){
+            return res
+              .status(400)
+              .json({ meassage: "invalid role" });
+
+        }
+        let token=await createTokenAndSaveCookies(user._id,res)
+        console.log(token)
+        res.status(200).json({
+            message:"login success",
+            user:{
+                _id:user._id,
+                name:user.name,
+                email: user.email,
+             role: user.role,
+            },
+            token:token
+        })
+
+
+    }catch(error){
+          console.log(error);
+          return res.status(500).json({ error: "Internal Server error" });
+
+    }
+}
+
+export const logout=async (req,res)=>{
+    try {
+        res.clearCookie("jwt")
+        res.status(200).json({message:"logout successfull"})
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: "Internal Server error" });
     }
 
 }
