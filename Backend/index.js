@@ -14,15 +14,23 @@ const MONGO_URI= process.env.MONGO_URI;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
-app.use("/api/user", registerRoute);
-
 app.use(
   fileUpload({
     useTempFiles: true,
     tempFileDir: "/tmp/",
   }),
 );
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET, // Click 'View API Keys' above to copy your API secret
+});
+
+
+app.use("/api/user", registerRoute);
+
+
 
 
 
@@ -33,12 +41,6 @@ try{
     console.log("Error connecting to MongoDB:", error); 
 }
 
-
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.API_KEY,
-  api_secret: process.env.API_SECRET, // Click 'View API Keys' above to copy your API secret
-});
 
 
 app.listen(port, () => {
