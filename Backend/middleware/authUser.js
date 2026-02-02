@@ -1,14 +1,14 @@
-import { User } from "../model/user.model";
+import { User } from "../model/user.model.js";
 import jwt from "jsonwebtoken"
 
-export const isAuthenticated=async(req,res)=>{
+export const isAuthenticated=async(req,res,next)=>{
     try{
         const token=req.cookies.jwt
         if(!token){
             return res.status(400).json({messge:"user not authorized"})
         }
-        const decoder=jwt.verify(token,"shh")
-        const user=await User.findOne(decoder.userid)
+        const decoder=jwt.verify(token,"shhh")
+        const user=await User.findById(decoder.userId)
         if(!user){
             return res.status(400).json({message:"user not found"})
         }
@@ -29,5 +29,6 @@ export const isAdmin=(...roles)=>{
            return res.status(400).json({message:"user is not authenticated"})
 
         }
+        next()
     }
 }
